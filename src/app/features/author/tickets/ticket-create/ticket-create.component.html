@@ -1,0 +1,131 @@
+<div class="create-ticket-container">
+  <div class="page-header">
+    <div>
+      <a routerLink="/author/tickets" class="back-link">
+        &larr; Back to My Tickets
+      </a>
+
+      <h1 class="page-title">Submit a Support Query</h1>
+      <p class="page-subtitle">
+        Our author support team and AI resolution system are here to assist you promptly.
+      </p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
+
+      <div *ngIf="errorMessage" class="error-banner">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Book selection -->
+      <div class="form-group">
+        <label for="scopeSelect">Query Scope / Associated Book</label>
+
+        <select id="scopeSelect" formControlName="scope" class="form-control">
+          <option value="general">
+            General / Account Level Query
+          </option>
+
+          <optgroup label="Select Your Book">
+            <option *ngFor="let book of books" [value]="book.book_id">
+              {{ book.title }} ({{ book.book_id }})
+            </option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label for="categorySelect">Category</label>
+
+        <select id="categorySelect" formControlName="category" class="form-control">
+          <option *ngFor="let cat of categories" [value]="cat">
+            {{ cat }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Subject -->
+      <div class="form-group">
+        <label for="subjectInput">
+          Subject <span class="required">*</span>
+        </label>
+
+        <input id="subjectInput" type="text" formControlName="subject" class="form-control"
+          placeholder="Enter ticket subject" />
+
+        <small class="error-text" *ngIf="ticketForm.controls.subject.touched &&
+                 ticketForm.controls.subject.invalid">
+          Subject is required and must be at most 255 characters.
+        </small>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label for="descInput">
+          Description <span class="required">*</span>
+        </label>
+
+        <textarea id="descInput" rows="6" formControlName="description" class="form-control"
+          placeholder="Describe your issue in detail..."></textarea>
+
+        <small class="error-text" *ngIf="ticketForm.controls.description.touched &&
+                 ticketForm.controls.description.invalid">
+          Description is required and must be at most 5000 characters.
+        </small>
+      </div>
+
+      <!-- Attachment -->
+      <div class="form-group">
+        <label for="fileAttachment">Optional Attachment</label>
+
+        <div class="file-drop-area">
+          <input id="fileAttachment" type="file" (change)="onFileSelected($event)"
+            accept=".pdf,.png,.jpg,.jpeg,.csv,.xlsx" />
+
+          <span class="file-hint">
+            Supported formats: PDF, PNG, JPG, CSV, XLSX (Max 10MB)
+          </span>
+
+          <span *ngIf="selectedFile" class="file-selected">
+            Selected: {{ selectedFile.name }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" routerLink="/author/tickets" class="btn btn-secondary">
+          Cancel
+        </button>
+
+        <button type="submit" [disabled]="submitting" class="btn btn-primary">
+          <span *ngIf="!submitting">Submit Query &rarr;</span>
+          <span *ngIf="submitting">Submitting Query...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- AI Reply Success Toast -->
+<div *ngIf="showAiReply" class="ai-reply-toast" role="status" aria-live="polite">
+  <div class="ai-reply-header">
+    <div>
+      <span class="success-icon">✓</span>
+      <strong>Ticket Created Successfully</strong>
+    </div>
+
+    <button type="button" class="toast-close" aria-label="Close notification" (click)="showAiReply = false">
+      &times;
+    </button>
+  </div>
+
+  <p class="ai-reply-label">AI-generated reply draft</p>
+
+  <p class="ai-reply-message">{{ aiReplyDraft }}</p>
+
+  <div class="toast-progress"></div>
+</div>

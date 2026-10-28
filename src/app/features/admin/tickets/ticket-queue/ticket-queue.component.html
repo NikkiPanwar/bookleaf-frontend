@@ -1,0 +1,141 @@
+<div class="admin-queue-container">
+  <div class="queue-header">
+    <div>
+      <h1 class="page-title">Author Support Ticket Queue</h1>
+      <p class="page-subtitle">Review, prioritize, and manage author support tickets across all publication workflows.</p>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-card">
+    <div class="filter-grid">
+      <div class="filter-field">
+        <label>Search Author / Subject</label>
+        <input
+          type="text"
+          [(ngModel)]="filters.search"
+          (input)="onFilterChange()"
+          placeholder="Filter by keyword or author..."
+          class="form-control"
+        />
+      </div>
+
+      <div class="filter-field">
+        <label>Status</label>
+        <select [(ngModel)]="filters.status" (change)="onFilterChange()" class="form-control">
+          <option value="">All Statuses</option>
+          <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label>Category</label>
+        <select [(ngModel)]="filters.category" (change)="onFilterChange()" class="form-control">
+          <option value="">All Categories</option>
+          <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label>Priority</label>
+        <select [(ngModel)]="filters.priority" (change)="onFilterChange()" class="form-control">
+          <option value="">All Priorities</option>
+          <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label>Date</label>
+        <input
+          type="date"
+          [(ngModel)]="filters.date"
+          (change)="onFilterChange()"
+          class="form-control"
+        />
+      </div>
+
+      <div class="filter-field reset-btn-wrap">
+        <button (click)="resetFilters()" class="btn btn-secondary">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ticket Queue Table -->
+  <div *ngIf="loading" class="state-box">
+    <p>Loading ticket queue...</p>
+  </div>
+
+  <div *ngIf="!loading && tickets.length === 0" class="state-box empty">
+    <div class="empty-icon">📭</div>
+    <h3>No tickets found matching current filters</h3>
+    <p>Try clearing filters or search criteria.</p>
+  </div>
+
+  <div *ngIf="!loading && tickets.length > 0" class="queue-table-card">
+    <table class="queue-table">
+      <thead>
+        <tr>
+          <th>Ticket #</th>
+          <th>Author</th>
+          <th>Subject & Scope</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Age / Date</th>
+          <th>Assigned To</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let t of tickets"
+          [class.row-urgent]="t.priority === 'Urgent'"
+          [class.row-oldest-unresolved]="isOldUnresolved(t)"
+        >
+          <td class="ticket-id">
+            <span>#{{ t.ticket_number }}</span>
+            <span *ngIf="t.priority === 'Urgent'" class="urgent-indicator" title="Urgent SLA">🔥 URGENT</span>
+            <span *ngIf="isOldUnresolved(t)" class="oldest-indicator" title="Unresolved for over 48 hours">⏳ OLDEST</span>
+          </td>
+
+          <td class="author-cell">
+            <span class="author-name">{{ t.author_name || t.author_id }}</span>
+          </td>
+
+          <td>
+            <div class="subject-cell">
+              <span class="subject-title">{{ t.subject }}</span>
+              <span class="book-tag" *ngIf="t.book_title">📖 {{ t.book_title }}</span>
+              <span class="general-tag" *ngIf="!t.book_title">General / Account</span>
+            </div>
+          </td>
+
+          <td>
+            <span class="category-pill">{{ t.category }}</span>
+          </td>
+
+          <td>
+            <app-status-badge [value]="t.priority" type="priority"></app-status-badge>
+          </td>
+
+          <td>
+            <app-status-badge [value]="t.status" type="status"></app-status-badge>
+          </td>
+
+          <td class="date-cell">
+            <span>{{ t.created_at | date:'shortDate' }}</span>
+          </td>
+
+          <td>
+            <span class="assignee" *ngIf="t.assigned_admin_name">👤 {{ t.assigned_admin_name }}</span>
+            <span class="unassigned" *ngIf="!t.assigned_admin_name">Unassigned</span>
+          </td>
+
+          <td>
+            <a [routerLink]="['/admin/tickets', t.id]" class="btn-review">Review & Reply &rarr;</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

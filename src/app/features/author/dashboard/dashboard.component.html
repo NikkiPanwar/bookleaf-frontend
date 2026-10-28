@@ -1,0 +1,76 @@
+<div class="dashboard-container">
+  <div class="welcome-header">
+    <div>
+      <h1 class="page-title">Welcome back, {{ stats.author_name }}</h1>
+      <p class="page-subtitle">Here is an overview of your publication metrics and active support queries.</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/author/tickets/create" class="btn btn-primary">+ Submit Support Query</a>
+    </div>
+  </div>
+
+  <!-- Metric Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Published Books</div>
+      <div class="stat-value">{{ stats.total_books }}</div>
+      <div class="stat-footer">
+        <a routerLink="/author/books">View my books &rarr;</a>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Total Copies Sold</div>
+      <div class="stat-value">{{ stats.total_copies_sold | number }}</div>
+      <div class="stat-footer">Across all channels</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Royalty Earned</div>
+      <div class="stat-value royalty">₹{{ stats.total_royalty_earned | number }}</div>
+      <div class="stat-footer">Paid: ₹{{ stats.royalty_paid | number }}</div>
+    </div>
+
+    <div class="stat-card highlight">
+      <div class="stat-label">Royalty Pending</div>
+      <div class="stat-value pending">₹{{ stats.royalty_pending | number }}</div>
+      <div class="stat-footer">Scheduled for next payout</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Active Support Queries</div>
+      <div class="stat-value">{{ stats.active_tickets_count }}</div>
+      <div class="stat-footer">
+        <a routerLink="/author/tickets">Check ticket status &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Action Navigation -->
+  <div class="quick-links-section">
+    <h2 class="section-title">Quick Actions</h2>
+    <div class="quick-grid">
+      <a routerLink="/author/books" class="quick-card">
+        <div class="quick-icon">📖</div>
+        <div>
+          <h3>My Books & Royalties</h3>
+          <p>Review sales count, pricing (MRP), and royalty breakdowns.</p>
+        </div>
+      </a>
+      <a routerLink="/author/tickets/create" class="quick-card">
+        <div class="quick-icon">💬</div>
+        <div>
+          <h3>Submit a Support Query</h3>
+          <p>Get fast assistance regarding publishing, royalties, or distribution.</p>
+        </div>
+      </a>
+      <a routerLink="/author/tickets" class="quick-card">
+        <div class="quick-icon">📋</div>
+        <div>
+          <h3>My Support Tickets</h3>
+          <p>Track conversation threads and answers from BookLeaf admins.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>

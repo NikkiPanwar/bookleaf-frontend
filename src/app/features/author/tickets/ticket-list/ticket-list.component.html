@@ -1,0 +1,55 @@
+<div class="tickets-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">My Support Tickets</h1>
+      <p class="page-subtitle">Track answers and status updates from the BookLeaf editorial and publishing team.</p>
+    </div>
+    <a routerLink="/author/tickets/create" class="btn btn-primary">+ Submit New Query</a>
+  </div>
+
+  <div *ngIf="loading" class="state-box">
+    <p>Loading your support tickets...</p>
+  </div>
+
+  <div *ngIf="!loading && tickets.length === 0" class="state-box empty">
+    <div class="empty-icon">✉️</div>
+    <h3>No support queries yet</h3>
+    <p>Need help with royalties, publishing, or distribution? Submit a query anytime.</p>
+    <a routerLink="/author/tickets/create" class="btn btn-primary mt-3">Submit a Support Query</a>
+  </div>
+
+  <div *ngIf="!loading && tickets.length > 0" class="tickets-table-card">
+    <table class="tickets-table">
+      <thead>
+        <tr>
+          <th>Ticket #</th>
+          <th>Subject & Scope</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of tickets">
+          <td class="ticket-id">#{{ t.ticket_number }}</td>
+          <td>
+            <div class="subject-cell">
+              <span class="subject-title">{{ t.subject }}</span>
+              <span class="book-tag" *ngIf="t.book_title">{{ t.book_title }}</span>
+              <span class="general-tag" *ngIf="!t.book_title">General / Account</span>
+            </div>
+          </td>
+          <td><span class="category-pill">{{ t.category }}</span></td>
+          <td><app-status-badge [value]="t.priority" type="priority"></app-status-badge></td>
+          <td><app-status-badge [value]="t.status" type="status"></app-status-badge></td>
+          <td class="date-cell">{{ t.created_at | date:'mediumDate' }}</td>
+          <td>
+            <a [routerLink]="['/author/tickets', t.id]" class="view-btn">View Thread &rarr;</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

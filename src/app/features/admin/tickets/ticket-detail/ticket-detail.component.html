@@ -1,0 +1,195 @@
+<div class="admin-detail-container" *ngIf="ticket">
+  <!-- Top Navigation & Actions -->
+  <div class="header-nav">
+    <a routerLink="/admin/tickets" class="back-link">&larr; Back to Ticket Queue</a>
+    <div class="action-bar">
+      <div class="ticket-identity">
+        <span class="ticket-number">#{{ ticket.ticket_number }}</span>
+        <h1 class="ticket-subject">{{ ticket.subject }}</h1>
+      </div>
+      <div class="top-actions">
+        <!-- Assign to Self Action -->
+        <button
+          *ngIf="ticket.assigned_admin_id !== currentUser?.id"
+          (click)="assignToSelf()"
+          class="btn btn-outline"
+        >
+          🙋 Assign to Me
+        </button>
+        <span *ngIf="ticket.assigned_admin_id === currentUser?.id" class="badge-assigned">
+          ✓ Assigned to You
+        </span>
+
+        <!-- Status Update Action -->
+        <div class="status-selector">
+          <label>Status:</label>
+          <select [ngModel]="ticket.status" (ngModelChange)="changeStatus($event)" class="form-select">
+            <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <!-- Left Column: Original Query & Conversation Thread -->
+    <div class="left-col">
+      <!-- 1. Original Query -->
+      <div class="card original-query-card">
+        <div class="card-header">
+          <div class="author-meta">
+            <span class="avatar">👤</span>
+            <div>
+              <span class="author-name">{{ ticket.author_name || ticket.author_id }}</span>
+              <span class="meta-sub">Submitted: {{ ticket.created_at | date:'medium' }}</span>
+            </div>
+          </div>
+          <div class="scope-tag">
+            <span *ngIf="ticket.book_title">📖 {{ ticket.book_title }}</span>
+            <span *ngIf="!ticket.book_title">General / Account</span>
+          </div>
+        </div>
+
+        <div class="query-body">
+          <p class="body-text">{{ ticket.description }}</p>
+          <div *ngIf="ticket.attachment_url" class="attachment-item">
+            <span>📎 Attachment:</span>
+            <a [href]="ticket.attachment_url" target="_blank">Download / View File</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thread / Previous Replies -->
+      <div class="conversation-thread" *ngIf="ticket.replies && ticket.replies.length > 0">
+        <h3 class="thread-title">Conversation History ({{ ticket.replies.length }})</h3>
+        <div
+          *ngFor="let r of ticket.replies"
+          class="reply-bubble"
+          [ngClass]="r.sender_role === 'admin' ? 'bubble-admin' : 'bubble-author'"
+        >
+          <div class="bubble-header">
+            <span class="sender-tag" [ngClass]="r.sender_role">{{ r.sender_role === 'admin' ? 'Admin Staff' : 'Author' }}</span>
+            <span class="sender-name">{{ r.sender_name }}</span>
+            <span class="msg-date">{{ r.created_at | date:'medium' }}</span>
+          </div>
+          <div class="bubble-body">
+            <p>{{ r.message }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 & 7: Editable AI Reply Draft & Send-Reply Action -->
+      <div class="card reply-draft-card">
+        <div class="card-header">
+          <div class="ai-badge-row">
+            <span class="section-title">Reply to Author</span>
+            <span class="ai-chip">✨ AI Assisted</span>
+          </div>
+          <button (click)="requestAiDraft()" [disabled]="generatingAi" class="btn btn-ai">
+            {{ generatingAi ? 'Generating Draft...' : '⚡ Regenerate AI Draft' }}
+          </button>
+        </div>
+
+        <div class="draft-area">
+          <label class="field-label">Edit AI Reply Draft:</label>
+          <textarea
+            rows="6"
+            [(ngModel)]="editableReplyDraft"
+            placeholder="Draft your response or let AI propose one..."
+            class="form-control text-draft"
+          ></textarea>
+        </div>
+
+        <div class="draft-actions">
+          <span class="draft-hint">This response will be sent directly to the author and change status to In Progress.</span>
+          <button
+            (click)="sendReply()"
+            [disabled]="sendingReply || !editableReplyDraft.trim()"
+            class="btn btn-primary"
+          >
+            {{ sendingReply ? 'Sending...' : '📨 Send Reply to Author' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: AI Classification, Priority & Internal Notes -->
+    <div class="right-col">
+      <!-- 2. Editable AI Classification & Priority -->
+      <div class="card sidebar-card">
+        <div class="card-header">
+          <span class="section-title">Classification & Priority</span>
+          <span class="ai-chip">AI Tagged</span>
+        </div>
+
+        <div class="card-content">
+          <div class="form-group">
+            <label>Category / Classification:</label>
+            <select [(ngModel)]="editableCategory" class="form-control">
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Priority Level:</label>
+            <select [(ngModel)]="editablePriority" class="form-control">
+              <option *ngFor="let pri of priorities" [value]="pri">{{ pri }}</option>
+            </select>
+          </div>
+
+          <button
+            (click)="saveClassificationAndPriority()"
+            [disabled]="updatingClassification"
+            class="btn btn-secondary full-width"
+          >
+            {{ updatingClassification ? 'Saving...' : 'Update Classification' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. Internal Notes (Private to Admins) -->
+      <div class="card sidebar-card internal-notes-card">
+        <div class="card-header">
+          <span class="section-title">Internal Staff Notes</span>
+          <span class="private-badge">🔒 Hidden from Author</span>
+        </div>
+
+        <div class="card-content">
+          <div class="notes-list" *ngIf="ticket.internal_notes && ticket.internal_notes.length > 0">
+            <div *ngFor="let n of ticket.internal_notes" class="note-item">
+              <div class="note-meta">
+                <span class="note-author">{{ n.admin_name }}</span>
+                <span class="note-date">{{ n.created_at | date:'short' }}</span>
+              </div>
+              <p class="note-body">{{ n.note_text }}</p>
+            </div>
+          </div>
+
+          <div *ngIf="!ticket.internal_notes || ticket.internal_notes.length === 0" class="no-notes">
+            <p>No internal notes yet.</p>
+          </div>
+
+          <div class="add-note-box">
+            <textarea
+              rows="3"
+              [(ngModel)]="internalNoteText"
+              placeholder="Add private staff note (e.g. checked payout batch #418)..."
+              class="form-control"
+            ></textarea>
+            <button
+              (click)="addNote()"
+              [disabled]="submittingNote || !internalNoteText.trim()"
+              class="btn btn-secondary full-width mt-2"
+            >
+              {{ submittingNote ? 'Adding...' : '+ Add Internal Note' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="state-box">
+  <p>Loading ticket details...</p>
+</div>

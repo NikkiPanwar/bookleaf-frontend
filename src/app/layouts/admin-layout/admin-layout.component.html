@@ -1,0 +1,47 @@
+<div class="layout-wrapper">
+  <!-- Admin Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">B</span>
+      <div class="brand-text">
+        <span class="brand-name">BookLeaf</span>
+        <span class="brand-tag">Staff Portal</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/tickets" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">📋</span>
+        <span>Ticket Queue</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar admin-badge">🛡️</div>
+        <div class="user-details">
+          <span class="user-name">{{ currentUser?.full_name || 'Admin' }}</span>
+          <span class="user-role">Support Admin</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()" title="Logout">
+        <span class="logout-icon">🚪</span>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <header class="topbar">
+      <div class="breadcrumb">Admin Portal / Ticket Resolution Desk</div>
+      <div class="header-status">
+        <span class="pulse-indicator"></span>
+        <span class="status-label">Live Support System Active</span>
+      </div>
+    </header>
+    <div class="content-body">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

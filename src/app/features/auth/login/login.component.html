@@ -1,0 +1,107 @@
+<div class="auth-page">
+    <section class="auth-card">
+        <div class="form-panel">
+            <a class="brand" href="/">
+                <span class="brand-icon">B</span>
+                <span>BookLeaf</span>
+            </a>
+
+            <div class="form-content">
+                <p class="eyebrow">WELCOME BACK</p>
+                <h1>Sign in to your account</h1>
+                <p class="subtitle">
+                    Continue your reading journey with BookLeaf.
+                </p>
+
+
+
+                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+
+                        <input id="email" type="email" formControlName="email" placeholder="you@example.com"
+                            autocomplete="email" />
+
+                        <small class="error-text" *ngIf="loginForm.controls.email.touched &&
+                   loginForm.controls.email.hasError('required')">
+                            Email is required.
+                        </small>
+
+                        <small class="error-text" *ngIf="loginForm.controls.email.touched &&
+                   loginForm.controls.email.hasError('email')">
+                            Enter a valid email address.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="password">Password</label>
+                            <a routerLink="/forgot-password">Forgot password?</a>
+                        </div>
+
+                        <input id="password" type="password" formControlName="password"
+                            placeholder="Enter your password" autocomplete="current-password" />
+
+                        <small class="error-text" *ngIf="loginForm.controls.password.touched &&
+                   loginForm.controls.password.hasError('required')">
+                            Password is required.
+                        </small>
+                    </div>
+
+                    <p class="error-text" *ngIf="errorMessage">
+                        {{ errorMessage }}
+                    </p>
+
+                    <button class="primary-btn" type="submit" [disabled]="isLoading">
+                        {{ isLoading ? 'Signing in...' : 'Sign in' }}
+                        <span>→</span>
+                    </button>
+
+                </form>
+
+
+                <p class="switch-text">
+                    Don't have an account?
+                    <a routerLink="/signup">Create an account</a>
+                </p>
+
+                <p class="terms">
+                    By continuing, you agree to our
+                    <a href="/terms">Terms</a> and
+                    <a href="/privacy">Privacy Policy</a>.
+                </p>
+            </div>
+        </div>
+
+        <aside class="visual-panel">
+            <div class="visual-overlay"></div>
+
+            <div class="visual-content">
+                <span class="visual-tag">YOUR NEXT CHAPTER</span>
+                <h2>Every book opens a new world.</h2>
+                <p>
+                    Discover stories, explore knowledge, and keep
+                    your reading journey alive.
+                </p>
+
+                <div class="book-stack">
+                    <div class="book book-one">
+                        <span>THE ART OF<br />SLOW LIVING</span>
+                    </div>
+                    <div class="book book-two">
+                        <span>DESIGN<br />YOUR LIFE</span>
+                    </div>
+                    <div class="book book-three">
+                        <span>THE<br />EXPLORER</span>
+                    </div>
+                </div>
+
+                <div class="visual-footer">
+                    <span class="footer-dot"></span>
+                    A little reading goes a long way.
+                </div>
+            </div>
+        </aside>
+    </section>
+</div>

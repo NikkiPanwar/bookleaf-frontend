@@ -1,0 +1,58 @@
+<div class="layout-wrapper">
+  <!-- Author Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">B</span>
+      <div class="brand-text">
+        <span class="brand-name">BookLeaf</span>
+        <span class="brand-tag">Author Portal</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/author/dashboard" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/author/books" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">📚</span>
+        <span>My Books</span>
+      </a>
+      <a routerLink="/author/tickets/create" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">✉️</span>
+        <span>Submit a Support Query</span>
+      </a>
+      <a routerLink="/author/tickets" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+        <span class="nav-icon">🎫</span>
+        <span>My Tickets</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">{{ currentUser?.full_name?.charAt(0) || 'A' }}</div>
+        <div class="user-details">
+          <span class="user-name">{{ currentUser?.full_name || 'Author' }}</span>
+          <span class="user-role">Author Account</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()" title="Logout">
+        <span class="logout-icon">🚪</span>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <header class="topbar">
+      <div class="breadcrumb">Author Portal</div>
+      <div class="header-actions">
+        <a routerLink="/author/tickets/create" class="quick-btn">+ New Query</a>
+      </div>
+    </header>
+    <div class="content-body">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

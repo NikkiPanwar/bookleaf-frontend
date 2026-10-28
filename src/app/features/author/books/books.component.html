@@ -1,0 +1,77 @@
+<div class="books-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">My Published Books</h1>
+      <p class="page-subtitle">Track your book performance, distribution status, and comprehensive royalty earnings.</p>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading your book records...</p>
+  </div>
+
+  <div *ngIf="!loading && books.length === 0" class="empty-state">
+    <div class="empty-icon">📚</div>
+    <h3>No books registered yet</h3>
+    <p>Your published titles and distribution stats will appear here once registered.</p>
+  </div>
+
+  <div *ngIf="!loading && books.length > 0" class="books-grid">
+    <div *ngFor="let book of books" class="book-card">
+      <div class="book-header">
+        <div class="book-main-info">
+          <span class="genre-tag">{{ book.genre }}</span>
+          <h2 class="book-title">{{ book.title }}</h2>
+          <div class="meta-row">
+            <span>ISBN: <strong>{{ book.isbn }}</strong></span>
+            <span>ID: <strong>{{ book.book_id }}</strong></span>
+            <span *ngIf="book.publication_date">Pub: {{ book.publication_date }}</span>
+          </div>
+        </div>
+        <div class="book-status-badge" [ngClass]="getStatusClass(book.status)">
+          {{ book.status }}
+        </div>
+      </div>
+
+      <!-- Financial & Sales Metrics Table/Cards -->
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <span class="m-label">MRP</span>
+          <span class="m-val">₹{{ book.mrp }}</span>
+        </div>
+        <div class="metric-item">
+          <span class="m-label">Royalty / Copy</span>
+          <span class="m-val">₹{{ book.author_royalty_per_copy }}</span>
+        </div>
+        <div class="metric-item">
+          <span class="m-label">Copies Sold</span>
+          <span class="m-val bold">{{ book.total_copies_sold | number }}</span>
+        </div>
+        <div class="metric-item">
+          <span class="m-label">Royalty Earned</span>
+          <span class="m-val earned">₹{{ book.total_royalty_earned | number }}</span>
+        </div>
+        <div class="metric-item">
+          <span class="m-label">Royalty Paid</span>
+          <span class="m-val paid">₹{{ book.royalty_paid | number }}</span>
+        </div>
+        <div class="metric-item highlight">
+          <span class="m-label">Royalty Pending</span>
+          <span class="m-val pending">₹{{ book.royalty_pending | number }}</span>
+        </div>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="book-footer">
+        <div class="channels">
+          <span class="channels-label">Available on:</span>
+          <span *ngFor="let channel of book.available_on" class="channel-badge">{{ channel }}</span>
+        </div>
+        <a [routerLink]="['/author/tickets/create']" [queryParams]="{ book_id: book.book_id }" class="query-link">
+          Query this book &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
