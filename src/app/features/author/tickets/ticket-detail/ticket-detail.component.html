@@ -1,88 +1,260 @@
-<div class="ticket-detail-container" *ngIf="ticket">
+<div class="ticket-detail-container" *ngIf="ticket as t">
+
+  <!-- Header -->
   <div class="header-nav">
-    <a routerLink="/author/tickets" class="back-link">&larr; Back to My Tickets</a>
+    <a routerLink="/author/tickets" class="back-link">
+      <span class="back-arrow">←</span>
+      Back to My Tickets
+    </a>
+
     <div class="ticket-header">
       <div class="title-meta">
         <div class="badge-row">
-          <span class="ticket-num">#{{ ticket.ticket_number }}</span>
-          <span class="category-badge">{{ ticket.category }}</span>
-          <app-status-badge [value]="ticket.priority" type="priority"></app-status-badge>
-          <app-status-badge [value]="ticket.status" type="status"></app-status-badge>
+          <span class="ticket-num">#{{ t.ticket_number }}</span>
+          <span class="category-badge">{{ t.category }}</span>
+
+          <app-status-badge [value]="t.priority" type="priority">
+          </app-status-badge>
+
+          <app-status-badge [value]="t.status" type="status">
+          </app-status-badge>
         </div>
-        <h1 class="ticket-title">{{ ticket.subject }}</h1>
+
+        <h1 class="ticket-title">{{ t.subject }}</h1>
+
         <div class="meta-details">
-          <span *ngIf="ticket.book_title">Associated Book: <strong>{{ ticket.book_title }}</strong></span>
-          <span *ngIf="!ticket.book_title">Scope: <em>General / Account Level</em></span>
-          <span>Submitted on: {{ ticket.created_at | date:'medium' }}</span>
+          <span *ngIf="t.book?.title">
+            Associated Book:
+            <strong>{{ t.book?.title }}</strong>
+          </span>
+
+          <span *ngIf="!t.book?.title">
+            Scope: <em>General / Account Level</em>
+          </span>
+
+          <span>
+            Submitted on: {{ t.created_at | date:'medium' }}
+          </span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Original Query Card -->
-  <div class="card original-query-card">
-    <div class="card-header">
-      <span class="section-title">Original Query</span>
-      <span class="sender-tag author-tag">You (Author)</span>
-    </div>
-    <div class="query-content">
-      <p class="desc-text">{{ ticket.description }}</p>
-      <div *ngIf="ticket.attachment_url" class="attachment-box">
-        <span class="att-icon">📎</span>
-        <a [href]="ticket.attachment_url" target="_blank" class="att-link">View Attachment</a>
-      </div>
-    </div>
+  <!-- Loading and error states -->
+  <div *ngIf="loading" class="state-card">
+    <div class="spinner"></div>
+    <p>Loading ticket details...</p>
   </div>
 
-  <!-- Conversation History (Admin Responses & Author Follow-ups) -->
-  <div class="conversation-section">
-    <h2 class="section-heading">Responses & Updates</h2>
+  <div *ngIf="errorMessage && !loading" class="alert alert-error">
+    {{ errorMessage }}
+    <button type="button" class="btn btn-outline" (click)="loadTicket()">Try again</button>
+  </div>
 
-    <div *ngIf="!ticket.replies || ticket.replies.length === 0" class="no-replies">
-      <p>Your query has been queued for our team. You will see admin responses here soon.</p>
+  <ng-container *ngIf="!loading && !errorMessage">
+
+    <!-- Ticket summary -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <span class="summary-icon">🎫</span>
+        <div>
+          <span class="summary-label">Ticket Number</span>
+          <strong>{{ t.ticket_number }}</strong>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-icon">📌</span>
+        <div>
+          <span class="summary-label">Priority</span>
+          <strong>{{ t.priority }}</strong>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-icon">🕒</span>
+        <div>
+          <span class="summary-label">Last Updated</span>
+          <strong>{{ t.updated_at | date:'mediumDate' }}</strong>
+        </div>
+      </div>
     </div>
 
-    <div class="thread" *ngIf="ticket.replies && ticket.replies.length > 0">
-      <div
-        *ngFor="let reply of ticket.replies"
-        class="message-card"
-        [ngClass]="reply.sender_role === 'admin' ? 'admin-response' : 'author-followup'"
-      >
-        <div class="msg-header">
-          <div class="sender-info">
-            <span class="role-badge" [ngClass]="reply.sender_role">{{ reply.sender_role === 'admin' ? 'Support Desk Admin' : 'You' }}</span>
-            <span class="sender-name">{{ reply.sender_name }}</span>
+    <!-- Original query -->
+    <section class="card original-query-card">
+      <div class="card-header">
+        <div>
+          <span class="section-eyebrow">TICKET DETAILS</span>
+          <h2 class="section-title">Original Query</h2>
+        </div>
+
+        <span class="sender-tag author-tag">
+          <span class="avatar avatar-author">Y</span>
+          You (Author)
+        </span>
+      </div>
+
+      <div class="query-content">
+        <p class="desc-text">{{ t.description }}</p>
+
+        <div *ngIf="t.attachment_url" class="attachment-box">
+          <span class="attachment-icon">📎</span>
+
+          <div class="attachment-info">
+            <strong>Attached file</strong>
+            <span>{{ getAttachmentName(t.attachment_url) }}</span>
           </div>
-          <span class="msg-date">{{ reply.created_at | date:'medium' }}</span>
-        </div>
-        <div class="msg-body">
-          <p>{{ reply.message }}</p>
-        </div>
-      </div>
-    </div>
 
-    <!-- Reply Box (if ticket is not closed) -->
-    <div class="reply-card" *ngIf="ticket.status !== 'Closed'">
-      <h3>Add Follow-up Message</h3>
-      <textarea
-        rows="4"
-        [(ngModel)]="replyMessage"
-        placeholder="Type your response to the support team..."
-        class="form-control"
-      ></textarea>
-      <div class="reply-actions">
-        <button
-          (click)="submitReply()"
-          [disabled]="submittingReply || !replyMessage.trim()"
-          class="btn btn-primary"
-        >
-          {{ submittingReply ? 'Sending...' : 'Send Message' }}
-        </button>
+          <a [href]="getAttachmentHref(t.attachment_url)" target="_blank" rel="noopener noreferrer"
+            class="attachment-link">
+            View Attachment ↗
+          </a>
+        </div>
       </div>
-    </div>
-  </div>
+
+      <div class="query-footer">
+        <span>Created {{ t.created_at | date:'medium' }}</span>
+        <span>Category: {{ t.category }}</span>
+      </div>
+    </section>
+
+    <!-- Conversation -->
+    <section class="conversation-section">
+      <div class="conversation-heading">
+        <div>
+          <span class="section-eyebrow">COMMUNICATION</span>
+          <h2 class="section-heading">Responses &amp; Updates</h2>
+          <p class="section-subtitle">
+            View messages exchanged with the BookLeaf support team.
+          </p>
+        </div>
+
+        <span class="message-count">
+          {{ t.replies?.length || 0 }}
+          {{ t.replies?.length === 1 ? 'message' : 'messages' }}
+        </span>
+      </div>
+
+      <div *ngIf="!t.replies || t.replies.length === 0" class="empty-conversation">
+        <div class="empty-icon">💬</div>
+        <h3>No responses yet</h3>
+        <p>
+          Your query has been received. Support replies will appear here.
+        </p>
+      </div>
+
+      <div class="thread" *ngIf="t.replies?.length">
+        <div *ngFor="let reply of t.replies; let last = last" class="message-row"
+          [class.message-row-author]="reply.sender_role === 'author'">
+
+          <div class="timeline-avatar" [class.admin-avatar]="reply.sender_role === 'admin'"
+            [class.author-avatar]="reply.sender_role === 'author'">
+            {{ reply.sender_role === 'admin' ? 'S' : 'Y' }}
+          </div>
+
+          <article class="message-card" [class.admin-response]="reply.sender_role === 'admin'"
+            [class.author-followup]="reply.sender_role === 'author'">
+
+            <div class="msg-header">
+              <div class="sender-info">
+                <span class="sender-name">
+                  {{ reply.sender_role === 'admin'
+                  ? 'BookLeaf Support Admin'
+                  : 'You' }}
+                </span>
+
+                <span class="role-badge" [class.admin-role]="reply.sender_role === 'admin'"
+                  [class.author-role]="reply.sender_role === 'author'">
+                  {{ reply.sender_role === 'admin' ? 'SUPPORT' : 'AUTHOR' }}
+                </span>
+              </div>
+
+              <span class="msg-date">
+                {{ reply.created_at | date:'medium' }}
+              </span>
+            </div>
+
+            <div class="msg-body">
+              <p>{{ reply.message }}</p>
+            </div>
+
+            <div *ngIf="reply.attachment_url" class="reply-attachment">
+              📎
+              <a [href]="getAttachmentHref(reply.attachment_url)" target="_blank" rel="noopener noreferrer">
+                View attachment
+              </a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Follow-up form -->
+    <section class="reply-card" *ngIf="t.status !== 'Closed'">
+      <div class="reply-card-heading">
+        <div class="reply-heading-icon">✉</div>
+        <div>
+          <h2>Add Follow-up Message</h2>
+          <p>Send additional information to the support team.</p>
+        </div>
+      </div>
+
+      <form (ngSubmit)="submitReply()">
+        <label for="replyMessage">Your message</label>
+
+        <textarea id="replyMessage" name="replyMessage" rows="5" [(ngModel)]="replyMessage" [disabled]="submittingReply"
+          maxlength="5000" placeholder="Type your response to the support team..." class="form-control">
+        </textarea>
+
+        <div class="textarea-footer">
+          <span>Do not include your password or other sensitive information.</span>
+          <span>{{ replyMessage.length }}/5000</span>
+        </div>
+
+        <div *ngIf="replyError" class="inline-error">
+          {{ replyError }}
+        </div>
+
+        <div *ngIf="replySuccess" class="inline-success">
+          {{ replySuccess }}
+        </div>
+
+        <div class="reply-actions">
+          <button type="submit" [disabled]="submittingReply || !replyMessage.trim()" class="btn btn-primary">
+            <span *ngIf="!submittingReply">Send Message ↗</span>
+            <span *ngIf="submittingReply">Sending...</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Closed ticket notice -->
+    <section class="closed-notice" *ngIf="t.status === 'Closed'">
+      <span class="closed-icon">✓</span>
+      <div>
+        <strong>This ticket is closed</strong>
+        <p>
+          This conversation is no longer accepting follow-up messages.
+          Please contact support or create a new ticket if you need further help.
+        </p>
+      </div>
+    </section>
+
+  </ng-container>
 </div>
 
-<div *ngIf="loading" class="loading-state">
+<!-- Initial loading when ticket is not yet available -->
+<div *ngIf="loading && !ticket" class="initial-loading">
+  <div class="spinner"></div>
   <p>Loading ticket details...</p>
+</div>
+
+<!-- Ticket not found / load error -->
+<div *ngIf="!loading && !ticket && errorMessage" class="state-card error-state">
+  <div class="empty-icon">!</div>
+  <h2>Unable to load ticket</h2>
+  <p>{{ errorMessage }}</p>
+  <a routerLink="/author/tickets" class="btn btn-primary">
+    Back to My Tickets
+  </a>
 </div>

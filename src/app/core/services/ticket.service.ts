@@ -1,8 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
 import { environment } from '../../../environments/environment';
 import { CreateTicketResponse } from '../models/auth/tickets/create_tickets';
+import { Ticket, TicketQueueResponse } from '../models/admin-ticket/get-queue-tickets';
+import { TicketDetailPageResponse } from '../models/admin-ticket/get-ticket-detail-pages';
+import { Observable } from 'rxjs';
 
 export interface TicketReply {
   id: number;
@@ -24,30 +28,6 @@ export interface InternalNote {
   created_at: string;
 }
 
-export interface Ticket {
-  id: number;
-  ticket_number: string;
-  author_id: string;
-  author_name?: string;
-  book_id?: string;
-  book_title?: string;
-  subject: string;
-  description: string;
-  attachment_url?: string;
-  category: string;
-  priority: 'Urgent' | 'High' | 'Medium' | 'Low';
-  status: 'Open' | 'In Progress' | 'Resolved' | 'Closed';
-  ai_classification?: string;
-  ai_priority?: 'Urgent' | 'High' | 'Medium' | 'Low';
-  ai_reply_draft?: string;
-  assigned_admin_id?: number;
-  assigned_admin_name?: string;
-  created_at: string;
-  updated_at: string;
-  replies?: TicketReply[];
-  internal_notes?: InternalNote[];
-}
-
 export interface TicketFilterParams {
   status?: string;
   category?: string;
@@ -56,27 +36,20 @@ export interface TicketFilterParams {
   search?: string;
 }
 
-/**
- * Ticket Service
- * Manages queries, tickets, replies, internal notes, and AI assistance
- * for both Author and Admin portals.
- */
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class TicketService {
   private http = inject(HttpClient);
   private readonly AUTHOR_API = environment.authorTickets;
-  private readonly ADMIN_API = 'http://localhost:8000/api/admin/tickets';
+  private readonly ADMIN_API = environment.adminTickets;
 
-  // --- Author Portal Methods ---
-
+  // ---------- Author portal ----------
   getMyTickets(): Observable<any> {
     return this.http.get<any>(this.AUTHOR_API);
   }
 
   getTicketById(id: number | string): Observable<Ticket> {
-    return this.http.get<Ticket>(`${this.AUTHOR_API}/${id}`);
+    return this.http.get<{ success: boolean; message: string; data: Ticket }>(`${this.AUTHOR_API}/${id}`)
+      .pipe(map(res => res.data));
   }
 
   createTicket(formData: FormData): Observable<CreateTicketResponse> {
@@ -87,21 +60,19 @@ export class TicketService {
     return this.http.post<TicketReply>(`${this.AUTHOR_API}/${ticketId}/reply`, { message });
   }
 
-  // --- Admin Portal Methods ---
-
-  getTicketQueue(filters: TicketFilterParams = {}): Observable<Ticket[]> {
+  // ---------- Admin portal ----------
+  getTicketQueue(filters: TicketFilterParams = {}): Observable<TicketQueueResponse> {
     let params = new HttpParams();
     if (filters.status) params = params.set('status', filters.status);
     if (filters.category) params = params.set('category', filters.category);
     if (filters.priority) params = params.set('priority', filters.priority);
     if (filters.date) params = params.set('date', filters.date);
     if (filters.search) params = params.set('search', filters.search);
-
-    return this.http.get<Ticket[]>(this.ADMIN_API, { params });
+    return this.http.get<TicketQueueResponse>(this.ADMIN_API, { params });
   }
 
-  getAdminTicketDetail(id: number | string): Observable<Ticket> {
-    return this.http.get<Ticket>(`${this.ADMIN_API}/${id}`);
+  getAdminTicketDetail(id: number | string): Observable<TicketDetailPageResponse> {
+    return this.http.get<TicketDetailPageResponse>(`${this.ADMIN_API}/${id}`);
   }
 
   assignToSelf(id: number | string): Observable<Ticket> {
@@ -135,3 +106,6 @@ export class TicketService {
     );
   }
 }
+
+// Re‑export models for convenient imports elsewhere
+export { Ticket, TicketQueueResponse };

@@ -1,14 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { TicketService, Ticket } from '../../../../core/services/ticket.service';
+import { TicketService} from '../../../../core/services/ticket.service';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
 import { finalize, tap } from 'rxjs';
+import { Ticket } from '../../../../core/models/admin-ticket/get-queue-tickets';
 
-/**
- * Author Ticket List Component
- * Lists the author's submitted support queries with their statuses and priorities.
- */
+
 @Component({
   selector: 'app-ticket-list',
   standalone: true,

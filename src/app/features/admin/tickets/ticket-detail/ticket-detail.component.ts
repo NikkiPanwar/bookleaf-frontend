@@ -1,21 +1,24 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { TicketService, Ticket } from '../../../../core/services/ticket.service';
+import { RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { TicketService } from '../../../../core/services/ticket.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { tap } from 'rxjs';
+import { TicketData } from '../../../../core/models/admin-ticket/get-ticket-detail-pages';
 
 /**
  * Admin Ticket Detail Component
- * Fulfills all specified Admin requirements:
- * 1. View Original Query
- * 2. Editable AI Classification & Priority
- * 3. Editable AI Reply Draft
- * 4. Internal Notes (Private to Admin Staff)
- * 5. Assign-to-self Action
- * 6. Status Update (Open, In Progress, Resolved, Closed)
- * 7. Send-Reply Action (Communicated to Author)
+ * Implements all admin ticket actions:
+ *   1. View original query
+ *   2. Editable classification & priority
+ *   3. AI‑generated reply draft
+ *   4. Internal staff notes
+ *   5. Assign‑to‑self
+ *   6. Status updates
+ *   7. Send reply to author
  */
 @Component({
   selector: 'app-admin-ticket-detail',
@@ -24,13 +27,13 @@ import { StatusBadgeComponent } from '../../../../shared/components/status-badge
   templateUrl: './ticket-detail.component.html',
   styleUrl: './ticket-detail.component.scss'
 })
-export class AdminTicketDetailComponent implements OnInit {
+export class AdminTicketDetailComponent {
   private route = inject(ActivatedRoute);
   private ticketService = inject(TicketService);
   private authService = inject(AuthService);
 
   ticketId: string | null = null;
-  ticket: Ticket | null = null;
+  ticket: TicketData | null = null;
   loading = true;
   currentUser = this.authService.getCurrentUser();
 
@@ -43,11 +46,8 @@ export class AdminTicketDetailComponent implements OnInit {
   editableReplyDraft = '';
   generatingAi = false;
   sendingReply = false;
-
-  // Status update
   updatingStatus = false;
 
-  // Internal Notes
   internalNoteText = '';
   submittingNote = false;
 
@@ -71,27 +71,35 @@ export class AdminTicketDetailComponent implements OnInit {
 
   loadTicket(): void {
     if (!this.ticketId) return;
-    this.ticketService.getAdminTicketDetail(this.ticketId).subscribe({
-      next: (ticket) => {
-        this.ticket = ticket;
-        this.editableCategory = ticket.category || 'General Inquiry';
-        this.editablePriority = ticket.priority || 'Medium';
-        this.editableReplyDraft = ticket.ai_reply_draft || '';
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      }
-    });
+    this.ticketService.getAdminTicketDetail(this.ticketId).pipe(
+      tap(response => {
+        if (response.success) {
+          this.ticket = response.data;
+          this.editableCategory = response.data.category || 'General Inquiry';
+          const priority = response.data.priority;
+          this.editablePriority =
+            priority === 'Urgent' ||
+              priority === 'High' ||
+              priority === 'Medium' ||
+              priority === 'Low'
+              ? priority
+              : 'Medium';
+          this.editableReplyDraft = (response.data as any).ai_reply_draft || '';
+          this.loading = false;
+        }
+      })
+    ).subscribe();
   }
+
 
   assignToSelf(): void {
     if (!this.ticketId) return;
+
     this.ticketService.assignToSelf(this.ticketId).subscribe({
       next: (updated) => {
         if (this.ticket) {
           this.ticket.assigned_admin_id = updated.assigned_admin_id;
-          this.ticket.assigned_admin_name = updated.assigned_admin_name || this.currentUser?.full_name;
+          // this.ticket.assigned_admin = updated.assigned_admin ?? null;
         }
       }
     });
@@ -134,17 +142,24 @@ export class AdminTicketDetailComponent implements OnInit {
     });
   }
 
+
   requestAiDraft(): void {
     if (!this.ticketId) return;
+
     this.generatingAi = true;
+
     this.ticketService.generateAiDraft(this.ticketId).subscribe({
-      next: (res) => {
-        this.editableCategory = res.classification;
-        this.editablePriority = res.priority as any;
-        this.editableReplyDraft = res.reply_draft;
+      next: (res: any) => {
+        const data = res.data;
+
+        this.editableCategory = data.classification;
+        this.editablePriority = data.priority;
+        this.editableReplyDraft = data.reply_draft;
+
         this.generatingAi = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Failed to generate AI draft:', err);
         this.generatingAi = false;
       }
     });
@@ -152,38 +167,40 @@ export class AdminTicketDetailComponent implements OnInit {
 
   sendReply(): void {
     if (!this.ticketId || !this.editableReplyDraft.trim()) return;
+
     this.sendingReply = true;
-    this.ticketService.sendAdminReply(this.ticketId, this.editableReplyDraft).subscribe({
-      next: (newReply) => {
-        if (this.ticket) {
-          if (!this.ticket.replies) this.ticket.replies = [];
-          this.ticket.replies.push(newReply);
-          this.ticket.status = 'In Progress';
+
+    this.ticketService
+      .sendAdminReply(this.ticketId, this.editableReplyDraft)
+      .subscribe({
+        next: () => {
+          this.editableReplyDraft = '';
+          this.sendingReply = false;
+          this.loadTicket();
+        },
+        error: () => {
+          this.sendingReply = false;
         }
-        this.editableReplyDraft = '';
-        this.sendingReply = false;
-      },
-      error: () => {
-        this.sendingReply = false;
-      }
-    });
+      });
   }
 
   addNote(): void {
     if (!this.ticketId || !this.internalNoteText.trim()) return;
+
     this.submittingNote = true;
-    this.ticketService.addInternalNote(this.ticketId, this.internalNoteText).subscribe({
-      next: (newNote) => {
-        if (this.ticket) {
-          if (!this.ticket.internal_notes) this.ticket.internal_notes = [];
-          this.ticket.internal_notes.push(newNote);
+
+    this.ticketService
+      .addInternalNote(this.ticketId, this.internalNoteText)
+      .subscribe({
+        next: () => {
+          this.internalNoteText = '';
+          this.submittingNote = false;
+          this.loadTicket();
+        },
+        error: () => {
+          this.submittingNote = false;
         }
-        this.internalNoteText = '';
-        this.submittingNote = false;
-      },
-      error: () => {
-        this.submittingNote = false;
-      }
-    });
+      });
   }
+
 }

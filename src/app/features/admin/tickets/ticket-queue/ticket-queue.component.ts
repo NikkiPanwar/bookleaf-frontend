@@ -2,20 +2,11 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { TicketService, Ticket, TicketFilterParams } from '../../../../core/services/ticket.service';
+import { TicketService, TicketFilterParams } from '../../../../core/services/ticket.service';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { finalize, tap } from 'rxjs';
+import { Ticket } from '../../../../core/models/admin-ticket/get-queue-tickets';
 
-/**
- * Admin Ticket Queue Component
- * Displays all authors' support queries with filters for:
- * - Status (Open, In Progress, Resolved, Closed)
- * - Category (Royalty, Publishing, Distribution, etc.)
- * - Priority (Urgent, High, Medium, Low)
- * - Date
- *
- * Visually highlights Urgent tickets and the oldest unresolved queries
- * to facilitate prompt SLA handling.
- */
 @Component({
   selector: 'app-ticket-queue',
   standalone: true,
@@ -27,7 +18,7 @@ export class TicketQueueComponent implements OnInit {
   private ticketService = inject(TicketService);
 
   loading = true;
-  tickets: Ticket[] = [];
+  ticketQueue: Ticket[] = [];
 
   filters: TicketFilterParams = {
     status: '',
@@ -49,24 +40,28 @@ export class TicketQueueComponent implements OnInit {
   priorities = ['Urgent', 'High', 'Medium', 'Low'];
 
   ngOnInit(): void {
-    this.fetchQueue();
+    this.getQueueTickets();
   }
 
-  fetchQueue(): void {
+
+  getQueueTickets() {
     this.loading = true;
-    this.ticketService.getTicketQueue(this.filters).subscribe({
-      next: (data) => {
-        this.tickets = data;
+    this.ticketService.getTicketQueue(this.filters).pipe(
+      tap(response => {
+        if (response.success) {
+          this.ticketQueue = response.data
+        }
+      }),
+      finalize(() => {
         this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      }
-    });
+      })
+    ).subscribe()
   }
+
+
 
   onFilterChange(): void {
-    this.fetchQueue();
+    this.getQueueTickets();
   }
 
   resetFilters(): void {
@@ -77,12 +72,9 @@ export class TicketQueueComponent implements OnInit {
       date: '',
       search: ''
     };
-    this.fetchQueue();
+    this.getQueueTickets();
   }
 
-  /**
-   * Helper to flag tickets that are unresolved and created over 48 hours ago
-   */
   isOldUnresolved(ticket: Ticket): boolean {
     if (ticket.status === 'Resolved' || ticket.status === 'Closed') {
       return false;

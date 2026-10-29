@@ -2,7 +2,8 @@
   <div class="queue-header">
     <div>
       <h1 class="page-title">Author Support Ticket Queue</h1>
-      <p class="page-subtitle">Review, prioritize, and manage author support tickets across all publication workflows.</p>
+      <p class="page-subtitle">Review, prioritize, and manage author support tickets across all publication workflows.
+      </p>
     </div>
   </div>
 
@@ -11,13 +12,8 @@
     <div class="filter-grid">
       <div class="filter-field">
         <label>Search Author / Subject</label>
-        <input
-          type="text"
-          [(ngModel)]="filters.search"
-          (input)="onFilterChange()"
-          placeholder="Filter by keyword or author..."
-          class="form-control"
-        />
+        <input type="text" [(ngModel)]="filters.search" (input)="onFilterChange()"
+          placeholder="Filter by keyword or author..." class="form-control" />
       </div>
 
       <div class="filter-field">
@@ -46,12 +42,7 @@
 
       <div class="filter-field">
         <label>Date</label>
-        <input
-          type="date"
-          [(ngModel)]="filters.date"
-          (change)="onFilterChange()"
-          class="form-control"
-        />
+        <input type="date" [(ngModel)]="filters.date" (change)="onFilterChange()" class="form-control" />
       </div>
 
       <div class="filter-field reset-btn-wrap">
@@ -65,13 +56,13 @@
     <p>Loading ticket queue...</p>
   </div>
 
-  <div *ngIf="!loading && tickets.length === 0" class="state-box empty">
+  <div *ngIf="!loading && ticketQueue.length === 0" class="state-box empty">
     <div class="empty-icon">📭</div>
     <h3>No tickets found matching current filters</h3>
     <p>Try clearing filters or search criteria.</p>
   </div>
 
-  <div *ngIf="!loading && tickets.length > 0" class="queue-table-card">
+  <div *ngIf="!loading && ticketQueue.length > 0" class="queue-table-card">
     <table class="queue-table">
       <thead>
         <tr>
@@ -87,15 +78,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr
-          *ngFor="let t of tickets"
-          [class.row-urgent]="t.priority === 'Urgent'"
-          [class.row-oldest-unresolved]="isOldUnresolved(t)"
-        >
+        <tr *ngFor="let t of ticketQueue" [class.row-urgent]="t.priority === 'Urgent'"
+          [class.row-oldest-unresolved]="isOldUnresolved(t)">
           <td class="ticket-id">
             <span>#{{ t.ticket_number }}</span>
             <span *ngIf="t.priority === 'Urgent'" class="urgent-indicator" title="Urgent SLA">🔥 URGENT</span>
-            <span *ngIf="isOldUnresolved(t)" class="oldest-indicator" title="Unresolved for over 48 hours">⏳ OLDEST</span>
+            <span *ngIf="isOldUnresolved(t)" class="oldest-indicator" title="Unresolved for over 48 hours">⏳
+              OLDEST</span>
           </td>
 
           <td class="author-cell">
@@ -127,8 +116,8 @@
           </td>
 
           <td>
-            <span class="assignee" *ngIf="t.assigned_admin_name">👤 {{ t.assigned_admin_name }}</span>
-            <span class="unassigned" *ngIf="!t.assigned_admin_name">Unassigned</span>
+            <span class="assignee" *ngIf="t.assigned_admin">👤 {{ t.assigned_admin || '-' }}</span>
+            <span class="unassigned" *ngIf="!t.assigned_admin">Unassigned</span>
           </td>
 
           <td>
