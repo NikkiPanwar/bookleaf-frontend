@@ -29,15 +29,16 @@ export class TicketQueueComponent implements OnInit {
   };
 
   categories = [
-    'Royalty & Payouts',
-    'Publishing & Editing',
-    'Distribution & Inventory',
-    'Account & Profile',
+    'Royalty & Payments',
+    'ISBN & Metadata Issues',
+    'Printing & Quality',
+    'Distribution & Availability',
+    'Book Status & Production Updates',
     'General Inquiry'
   ];
 
   statuses = ['Open', 'In Progress', 'Resolved', 'Closed'];
-  priorities = ['Urgent', 'High', 'Medium', 'Low'];
+  priorities = ['Critical', 'High', 'Medium', 'Low'];
 
   ngOnInit(): void {
     this.getQueueTickets();

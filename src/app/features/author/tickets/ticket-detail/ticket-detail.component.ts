@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -20,9 +20,10 @@ import { Ticket } from '../../../../core/models/admin-ticket/get-queue-tickets';
   templateUrl: './ticket-detail.component.html',
   styleUrl: './ticket-detail.component.scss'
 })
-export class TicketDetailComponent implements OnInit {
+export class TicketDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private ticketService = inject(TicketService);
+  private pollIntervalTimer: any = null;
 
   ticketId: string | null = null;
   ticket: Ticket | null = null;
@@ -45,6 +46,35 @@ export class TicketDetailComponent implements OnInit {
     }
 
     this.loadTicket();
+    this.startPolling();
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
+  private startPolling(): void {
+    this.stopPolling();
+    // Poll every 5 seconds to provide near-real-time updates as required by the spec
+    this.pollIntervalTimer = setInterval(() => {
+      if (this.ticketId && !this.submittingReply) {
+        this.ticketService.getTicketById(this.ticketId).subscribe({
+          next: (ticket) => {
+            if (this.ticket) {
+              this.ticket = ticket;
+            }
+          },
+          error: () => {} // Silent fail on background poll
+        });
+      }
+    }, 5000);
+  }
+
+  private stopPolling(): void {
+    if (this.pollIntervalTimer) {
+      clearInterval(this.pollIntervalTimer);
+      this.pollIntervalTimer = null;
+    }
   }
 
   loadTicket(): void {

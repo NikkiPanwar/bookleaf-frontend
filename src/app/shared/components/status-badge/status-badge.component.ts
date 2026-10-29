@@ -53,6 +53,7 @@ import { CommonModule } from '@angular/common';
       color: #64748b;
       border: 1px solid #cbd5e1;
     }
+    .priority-critical,
     .priority-urgent {
       background: #fef2f2;
       color: #dc2626;

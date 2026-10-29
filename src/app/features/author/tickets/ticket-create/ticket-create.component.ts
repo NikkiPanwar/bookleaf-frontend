@@ -37,17 +37,18 @@ export class TicketCreateComponent implements OnInit {
   errorMessage = '';
 
   categories = [
-    'Royalty & Payouts',
-    'Publishing & Editing',
-    'Distribution & Inventory',
-    'Account & Profile',
+    'Royalty & Payments',
+    'ISBN & Metadata Issues',
+    'Printing & Quality',
+    'Distribution & Availability',
+    'Book Status & Production Updates',
     'General Inquiry'
   ];
 
   ticketForm = this.fb.group({
     scope: ['general', Validators.required],
     subject: ['', [Validators.required, Validators.maxLength(255)]],
-    category: ['Royalty & Payouts', Validators.required],
+    category: ['General Inquiry', Validators.required],
     description: ['', [Validators.required, Validators.maxLength(5000)]]
   });
 

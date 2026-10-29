@@ -39,7 +39,7 @@ export class AdminTicketDetailComponent {
 
   // Editable Classification & Priority
   editableCategory = '';
-  editablePriority: 'Urgent' | 'High' | 'Medium' | 'Low' = 'Medium';
+  editablePriority: 'Critical' | 'High' | 'Medium' | 'Low' = 'Medium';
   updatingClassification = false;
 
   // Editable AI Reply Draft
@@ -52,14 +52,15 @@ export class AdminTicketDetailComponent {
   submittingNote = false;
 
   categories = [
-    'Royalty & Payouts',
-    'Publishing & Editing',
-    'Distribution & Inventory',
-    'Account & Profile',
+    'Royalty & Payments',
+    'ISBN & Metadata Issues',
+    'Printing & Quality',
+    'Distribution & Availability',
+    'Book Status & Production Updates',
     'General Inquiry'
   ];
 
-  priorities: Array<'Urgent' | 'High' | 'Medium' | 'Low'> = ['Urgent', 'High', 'Medium', 'Low'];
+  priorities: Array<'Critical' | 'High' | 'Medium' | 'Low'> = ['Critical', 'High', 'Medium', 'Low'];
   statuses: Array<'Open' | 'In Progress' | 'Resolved' | 'Closed'> = ['Open', 'In Progress', 'Resolved', 'Closed'];
 
   ngOnInit(): void {
@@ -78,7 +79,7 @@ export class AdminTicketDetailComponent {
           this.editableCategory = response.data.category || 'General Inquiry';
           const priority = response.data.priority;
           this.editablePriority =
-            priority === 'Urgent' ||
+            priority === 'Critical' ||
               priority === 'High' ||
               priority === 'Medium' ||
               priority === 'Low'

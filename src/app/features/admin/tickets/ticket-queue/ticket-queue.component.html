@@ -78,11 +78,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let t of ticketQueue" [class.row-urgent]="t.priority === 'Urgent'"
+        <tr *ngFor="let t of ticketQueue" [class.row-urgent]="t.priority === 'Critical' || t.priority === 'Urgent'"
           [class.row-oldest-unresolved]="isOldUnresolved(t)">
           <td class="ticket-id">
             <span>#{{ t.ticket_number }}</span>
-            <span *ngIf="t.priority === 'Urgent'" class="urgent-indicator" title="Urgent SLA">🔥 URGENT</span>
+            <span *ngIf="t.priority === 'Critical' || t.priority === 'Urgent'" class="urgent-indicator" title="Critical SLA">🔥 CRITICAL</span>
             <span *ngIf="isOldUnresolved(t)" class="oldest-indicator" title="Unresolved for over 48 hours">⏳
               OLDEST</span>
           </td>
