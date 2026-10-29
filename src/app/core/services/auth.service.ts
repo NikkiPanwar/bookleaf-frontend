@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { LoginRequest, LoginResponse } from '../models/auth/login';
 import { environment } from '../../../environments/environment';
+import { SignupRequest, SignupResponse } from '../models/auth/signup';
 
 
 export interface User {
@@ -23,10 +24,6 @@ export interface AuthResponse {
   user: User;
 }
 
-/**
- * Authentication Service
- * Manages JWT tokens, user state, login, signup, and logout.
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -46,10 +43,8 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.API_URL}/login`, payload)
   }
 
-  signup(userData: { full_name: string; email: string; password: string; role?: string }): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/signup`, userData).pipe(
-      tap((res) => this.setSession(res))
-    );
+  signup(payload: SignupRequest): Observable<SignupResponse> {
+    return this.http.post<SignupResponse>(`${this.API_URL}/signup`, payload)
   }
 
   logout(): void {

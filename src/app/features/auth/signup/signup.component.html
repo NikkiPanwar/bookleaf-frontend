@@ -13,23 +13,31 @@
                     Join BookLeaf and start your reading journey today.
                 </p>
 
-                <form>
+                <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
                     <div class="form-group">
                         <label for="fullName">Full name</label>
-                        <input id="fullName" name="fullName" type="text" placeholder="Enter your full name"
-                            autocomplete="name" required />
+                        <input id="fullName" name="fullName" formControlName="full_name" type="text"
+                            placeholder="Enter your full name" autocomplete="name" required />
                     </div>
 
                     <div class="form-group">
                         <label for="email">Email address</label>
-                        <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email"
-                            required />
+                        <input id="email" name="email" formControlName="email" type="email"
+                            placeholder="you@example.com" autocomplete="email" required />
+                        <small class="error-text" *ngIf="signupForm.controls.email.touched &&
+                          signupForm.controls.email.hasError('required')">
+                            Email is required.
+                        </small>
+                        <small class="error-text" *ngIf="signupForm.controls.email.touched &&
+                   signupForm.controls.email.hasError('email')">
+                            Enter a valid email address.
+                        </small>
                     </div>
 
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input id="password" name="password" type="password" placeholder="Create a strong password"
-                            autocomplete="new-password" minlength="8" required />
+                        <input id="password" name="password" type="password" formControlName="password"
+                            placeholder="Create a strong password" autocomplete="new-password" minlength="8" required />
                         <p class="field-hint">Use at least 8 characters.</p>
                     </div>
 
@@ -40,8 +48,9 @@
                             required />
                     </div>
 
-                    <button class="primary-btn" type="submit">
-                        Create account <span>→</span>
+                    <button class="primary-btn" type="submit" [disabled]="isLoading">
+                        {{isLoading ? 'Creating...' :'Create account'}}
+                        <span>→</span>
                     </button>
                 </form>
 

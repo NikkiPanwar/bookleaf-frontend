@@ -53,7 +53,8 @@
                         {{ errorMessage }}
                     </p>
 
-                    <button class="primary-btn" type="submit" [disabled]="isLoading">
+                    <button class="primary-btn" type="submit"
+                     [disabled]="isLoading">
                         {{ isLoading ? 'Signing in...' : 'Sign in' }}
                         <span>→</span>
                     </button>
