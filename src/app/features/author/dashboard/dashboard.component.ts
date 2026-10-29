@@ -36,13 +36,16 @@ export class DashboardComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    this.getAuthorDashboard()
+  }
+
+  getAuthorDashboard() {
     this.dashboardService.getAuthorDashboard().subscribe({
       next: (data) => {
         this.stats = data;
         this.loading = false;
       },
       error: () => {
-        // Fallback for initial demo state
         this.loading = false;
       }
     });

@@ -30,7 +30,7 @@ export class BooksComponent implements OnInit {
         if (response.success) {
           this.books = response.data
         } else {
-          console.log('something wemt wrong')
+          console.log('something went wrong')
         }
       }),
       finalize(() => {
