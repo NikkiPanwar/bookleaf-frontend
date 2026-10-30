@@ -82,19 +82,20 @@
           [class.row-oldest-unresolved]="isOldUnresolved(t)">
           <td class="ticket-id">
             <span>#{{ t.ticket_number }}</span>
-            <span *ngIf="t.priority === 'Critical' || t.priority === 'Urgent'" class="urgent-indicator" title="Critical SLA">🔥 CRITICAL</span>
+            <span *ngIf="t.priority === 'Critical' || t.priority === 'Urgent'" class="urgent-indicator"
+              title="Critical SLA">🔥 CRITICAL</span>
             <span *ngIf="isOldUnresolved(t)" class="oldest-indicator" title="Unresolved for over 48 hours">⏳
               OLDEST</span>
           </td>
 
           <td class="author-cell">
-            <span class="author-name">{{ t.author_name || t.author_id }}</span>
+            <span class="author-name">{{ t.author_name?.full_name || t.author_id }}</span>
           </td>
 
           <td>
             <div class="subject-cell">
               <span class="subject-title">{{ t.subject }}</span>
-              <span class="book-tag" *ngIf="t.book_title">📖 {{ t.book_title }}</span>
+              <span class="book-tag" *ngIf="t.book_title">📖 {{ t.book?.title }}</span>
               <span class="general-tag" *ngIf="!t.book_title">General / Account</span>
             </div>
           </td>
@@ -116,7 +117,7 @@
           </td>
 
           <td>
-            <span class="assignee" *ngIf="t.assigned_admin">👤 {{ t.assigned_admin || '-' }}</span>
+            <span class="assignee" *ngIf="t.assigned_admin">👤 {{ t.assigned_admin.full_name || '-' }}</span>
             <span class="unassigned" *ngIf="!t.assigned_admin">Unassigned</span>
           </td>
 

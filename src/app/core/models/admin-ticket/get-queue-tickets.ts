@@ -35,7 +35,7 @@ export interface Ticket {
   author_name?: string;
   book_title?: string;
 
-assigned_admin?:string;
+  assigned_admin?: TicketAdmin | null;
   // Replies associated with the ticket (optional)
   replies?: TicketReply[];
 }
@@ -74,6 +74,7 @@ export interface TicketBook {
 export interface TicketAdmin {
   id: number;
   admin_id?: string;
+  author_id: string | null;
   full_name?: string;
   email?: string;
   role?: string;
