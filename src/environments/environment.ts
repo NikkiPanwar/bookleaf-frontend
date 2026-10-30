@@ -1,8 +1,8 @@
 export const environment = {
-  production: false,
-  authUrl: 'http://localhost:8000/api/auth',
-  bookUrl: 'http://localhost:8000/api/books',
-  authorTickets: 'http://localhost:8000/api/tickets',
-  adminTickets: 'http://localhost:8000/api/admin/tickets',
-  dashboardUrl: 'http://localhost:8000/api/dashboard'
+  production: true,
+  authUrl: 'https://bookleaf-backend-sqs3.onrender.com/api/auth',
+  bookUrl: 'https://bookleaf-backend-sqs3.onrender.com/api/books',
+  authorTickets: 'https://bookleaf-backend-sqs3.onrender.com/api/tickets',
+  adminTickets: 'https://bookleaf-backend-sqs3.onrender.com/api/admin/tickets',
+  dashboardUrl: 'https://bookleaf-backend-sqs3.onrender.com/api/dashboard'
 };
